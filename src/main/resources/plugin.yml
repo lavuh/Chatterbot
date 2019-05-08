@@ -1,0 +1,4 @@
+name: Chatterbot
+main: solar.rpg.chatter.Main
+depend: [Skytopia]
+version: 1.1
