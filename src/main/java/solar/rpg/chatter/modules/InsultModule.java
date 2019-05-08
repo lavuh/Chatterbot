@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import solar.rpg.chatter.Main;
@@ -23,7 +24,7 @@ import java.util.logging.Level;
  * @version 1.1
  * @since 1.0
  */
-public class InsultModule extends Module {
+public class InsultModule extends Module implements Listener {
 
     /* Pre-defined list of insults that Chatterbot will PM its targets. */
     private static final String[] insults = {

@@ -3,6 +3,7 @@ package solar.rpg.chatter.modules;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import solar.rpg.chatter.Main;
@@ -17,7 +18,7 @@ import java.util.*;
  * @version 1.1
  * @since 1.0
  */
-public class WelcomeModule extends Module {
+public class WelcomeModule extends Module implements Listener {
 
     /* Keeps track of players who are new, and who have welcomed them. */
     private HashMap<String, Set<UUID>> welcomable;
