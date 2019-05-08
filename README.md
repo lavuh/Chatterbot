@@ -1,7 +1,7 @@
 Chatterbot
 =======================
 
-Casino is a lightweight plugin that integrates a chatbot into the server chat to perform helpful function.
+Casino is a lightweight plugin that integrates a chatbot into the server chat to perform helpful functions.
 
 Contributors
 ------------
