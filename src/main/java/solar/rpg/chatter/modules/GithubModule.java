@@ -2,6 +2,7 @@ package solar.rpg.chatter.modules;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.scheduler.BukkitTask;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
@@ -31,7 +32,8 @@ public class GithubModule extends Module {
             "lavuh/Floating-Anvil",
             "skytopia/Casino",
             "skytopia/Chatterbot",
-            "skytopia/Shoptopia"
+            "skytopia/Shoptopia",
+            "skytopia/Skyblock-Public"
     };
 
     /* Keep the latest SHA */
@@ -40,6 +42,9 @@ public class GithubModule extends Module {
     /* GitHub API stuff. */
     private final LinkedList<GHRepository> REPOSITORIES;
     private GitHub GITHUB;
+
+    /* The github task instance. */
+    private BukkitTask githubTask;
 
     public GithubModule(Main PLUGIN) {
         super(PLUGIN);
@@ -61,6 +66,9 @@ public class GithubModule extends Module {
      * Runs a task that regularly checks for commits from the list of watched repositories.
      */
     private void githubTask() {
+        // Clear any existing GitHub repositories.
+        REPOSITORIES.clear();
+
         Bukkit.getScheduler().runTaskAsynchronously(PLUGIN, () -> {
             Main.log(Level.INFO, "Attempting to load in watched repositories...");
 
@@ -72,47 +80,49 @@ public class GithubModule extends Module {
                     REPOSITORIES.add(gitRepo);
 
                     // Make the latest commit the first one in the list.
-                    LATEST_SHA.put(gitRepo.getName(), gitRepo.listCommits().asList().get(0).getSHA1());
+                    if (!LATEST_SHA.contains(gitRepo.getName()))
+                        LATEST_SHA.put(gitRepo.getName(), gitRepo.listCommits().asList().get(0).getSHA1());
                 } catch (Exception e) {
                     Main.log(Level.WARNING, String.format("Unable to watch repository '%s'. Tracker will not operate. See stack trace", repo));
                     e.printStackTrace();
                     return;
                 }
             }
+            PLUGIN.say("I'm listening to GitHub repositories again!");
         });
 
-            // Watch for new commits every 30 seconds on an async thread.
-            Bukkit.getScheduler().runTaskTimerAsynchronously(PLUGIN, () -> {
-                for (GHRepository repo : REPOSITORIES) {
-                    List<GHCommit> commits = repo.listCommits().asList();
+        // Watch for new commits every 30 seconds on an async thread.
+        githubTask = Bukkit.getScheduler().runTaskTimerAsynchronously(PLUGIN, () -> {
+            for (GHRepository repo : REPOSITORIES) {
+                List<GHCommit> commits = repo.listCommits().asList();
 
-                    // Don't go through new commits if the last known newest commit is still the newest.
-                    if (commits.get(0).getSHA1().equals(LATEST_SHA.get(repo.getName()))) continue;
+                // Don't go through new commits if the last known newest commit is still the newest.
+                if (commits.get(0).getSHA1().equals(LATEST_SHA.get(repo.getName()))) continue;
 
-                    List<GHCommit> newCommits = new LinkedList<>();
+                List<GHCommit> newCommits = new LinkedList<>();
 
-                    // Go through commits, from oldest to newest, until we reach the latest.
-                    for (GHCommit commit : commits)
-                        if (!LATEST_SHA.get(repo.getName()).equals(commit.getSHA1()))
-                            newCommits.add(commit);
-                        else break;
+                // Go through commits, from oldest to newest, until we reach the latest.
+                for (GHCommit commit : commits)
+                    if (!LATEST_SHA.get(repo.getName()).equals(commit.getSHA1()))
+                        newCommits.add(commit);
+                    else break;
 
-                    LATEST_SHA.put(repo.getName(), commits.get(0).getSHA1());
+                LATEST_SHA.put(repo.getName(), commits.get(0).getSHA1());
 
-                    // Notify players of any new commits.
-                    //FIXME: Newer commits are displayed first. (minor)
-                    for (GHCommit commit : newCommits) {
-                        Bukkit.getScheduler().runTask(PLUGIN, () -> {
-                            try {
-                                PLUGIN.say(newCommitMessage(repo, commit));
-                            } catch (IOException e) {
-                                Main.log(Level.WARNING, String.format("Unable to show commit for %s. Check stack trace", repo.getName()));
-                                e.printStackTrace();
-                            }
-                        });
-                    }
+                // Notify players of any new commits.
+                //FIXME: Newer commits are displayed first. (minor)
+                for (GHCommit commit : newCommits) {
+                    Bukkit.getScheduler().runTask(PLUGIN, () -> {
+                        try {
+                            PLUGIN.say(newCommitMessage(repo, commit));
+                        } catch (IOException e) {
+                            Main.log(Level.WARNING, String.format("Unable to show commit for %s. Check stack trace", repo.getName()));
+                            e.printStackTrace();
+                        }
+                    });
                 }
-            }, 1200L, 600L);
+            }
+        }, 1200L, 600L);
     }
 
     /**
@@ -128,5 +138,14 @@ public class GithubModule extends Module {
     }
 
     public void onCommand(String command, org.bukkit.entity.Player player) {
+        String[] args = command.split(" ");
+
+        // Only allow players with a specific permission to use this command.
+        if (args[0].equals("!reloadgit") && player.hasPermission("skytopia.staff")) {
+            if (githubTask != null)
+                githubTask.cancel();
+            PLUGIN.say("I've cancelled the task and will try again.");
+            githubTask();
+        }
     }
 }

@@ -13,6 +13,11 @@ Features
 - `Welcome Module`: This module privately messages everyone in a CommandBook message format notifying them of any first-time players that join. Rewards are also given to players that welcome the new player.
 - `Insult Module`: This module is designed to drive off trolls and other chat-related rulebreakers. When targeted, the player will be bombarded with a random insult every 0.5 seconds, and will not be able to chat. Their chat will still be recorded in console for humor purposes.
 - `GitHub Module`: This module listens to a predefined list of GitHub repositories, and broadcasts any new commits that are pushed.
+>In order to properly use the GitHub module, the github-api requires you to place your login details at `~/.github` with the following content:
+```
+login=username
+password=123456
+```
 
 Compiling
 ---------
