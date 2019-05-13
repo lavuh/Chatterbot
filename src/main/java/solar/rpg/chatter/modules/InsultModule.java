@@ -79,10 +79,9 @@ public class InsultModule extends Module implements Listener {
     @EventHandler
     public void onChatCancel(AsyncPlayerChatEvent event) {
         // Stops silenced people from chatting.
-        // Logging level FINEST is used for irony because whatever the targets say is usually garbage.
         if (targets.contains(event.getPlayer().getUniqueId())) {
             event.getPlayer().sendMessage(ChatColor.RED + "Your chat has been disabled. Learn to use it properly.");
-            Main.log(Level.FINEST, String.format("Silenced message from %s: %s", event.getPlayer().getName(), event.getMessage()));
+            Main.log(Level.INFO, String.format("Silenced message from %s: %s", event.getPlayer().getName(), event.getMessage()));
             event.setCancelled(true);
         }
     }

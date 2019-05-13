@@ -41,6 +41,16 @@ public class Main extends JavaPlugin implements Listener {
     /* Random number generator. */
     private Random RNG;
 
+    /**
+     * Global logging method. Prints out to console with Shoptopia prefix.
+     *
+     * @param level Logging level.
+     * @param msg   Message to log.
+     */
+    public static void log(Level level, String msg) {
+        logger.log(level, String.format("[Chatterbot] %s", msg));
+    }
+
     public void onEnable() {
         logger = getLogger();
         log(Level.FINE, String.format("Enabling Chatterbot v%s!", getDescription().getVersion()));
@@ -79,16 +89,6 @@ public class Main extends JavaPlugin implements Listener {
      */
     public void pm(String msg, Player player) {
         Bukkit.getScheduler().runTaskLater(this, () -> player.sendMessage(ChatColor.GRAY + "(From " + PREFIX + NAME + ChatColor.GRAY + "): " + ChatColor.WHITE + msg), 1L);
-    }
-
-    /**
-     * Global logging method. Prints out to console with Shoptopia prefix.
-     *
-     * @param level Logging level.
-     * @param msg   Message to log.
-     */
-    public static void log(Level level, String msg) {
-        logger.log(level, String.format("[Chatterbot] %s", msg));
     }
 
     @EventHandler

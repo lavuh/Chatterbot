@@ -33,7 +33,7 @@ public abstract class Module {
      * Passed in by Main from an AsyncPlayerChatEvent.
      *
      * @param message What was said in chat.
-     * @param player Who said it.
+     * @param player  Who said it.
      */
     public abstract void onCommand(String message, Player player);
 }
