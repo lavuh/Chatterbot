@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.scheduler.BukkitTask;
 import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHException;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import solar.rpg.chatter.Main;
@@ -94,32 +95,37 @@ public class GithubModule extends Module {
         // Watch for new commits every 30 seconds on an async thread.
         githubTask = Bukkit.getScheduler().runTaskTimerAsynchronously(PLUGIN, () -> {
             for (GHRepository repo : REPOSITORIES) {
-                List<GHCommit> commits = repo.listCommits().asList();
+                try {
+                    List<GHCommit> commits = repo.listCommits().asList();
 
-                // Don't go through new commits if the last known newest commit is still the newest.
-                if (commits.get(0).getSHA1().equals(LATEST_SHA.get(repo.getName()))) continue;
+                    // Don't go through new commits if the last known newest commit is still the newest.
+                    if (commits.get(0).getSHA1().equals(LATEST_SHA.get(repo.getName()))) continue;
 
-                List<GHCommit> newCommits = new LinkedList<>();
+                    List<GHCommit> newCommits = new LinkedList<>();
 
-                // Go through commits, from oldest to newest, until we reach the latest.
-                for (GHCommit commit : commits)
-                    if (!LATEST_SHA.get(repo.getName()).equals(commit.getSHA1()))
-                        newCommits.add(commit);
-                    else break;
+                    // Go through commits, from oldest to newest, until we reach the latest.
+                    for (GHCommit commit : commits)
+                        if (!LATEST_SHA.get(repo.getName()).equals(commit.getSHA1()))
+                            newCommits.add(commit);
+                        else break;
 
-                LATEST_SHA.put(repo.getName(), commits.get(0).getSHA1());
+                    LATEST_SHA.put(repo.getName(), commits.get(0).getSHA1());
 
-                // Notify players of any new commits.
-                //FIXME: Newer commits are displayed first. (minor)
-                for (GHCommit commit : newCommits) {
-                    Bukkit.getScheduler().runTask(PLUGIN, () -> {
-                        try {
-                            PLUGIN.say(newCommitMessage(repo, commit));
-                        } catch (IOException e) {
-                            Main.log(Level.WARNING, String.format("Unable to show commit for %s. Check stack trace", repo.getName()));
-                            e.printStackTrace();
-                        }
-                    });
+                    // Notify players of any new commits.
+                    //FIXME: Newer commits are displayed first. (minor)
+                    for (GHCommit commit : newCommits) {
+                        Bukkit.getScheduler().runTask(PLUGIN, () -> {
+                            try {
+                                PLUGIN.say(newCommitMessage(repo, commit));
+                            } catch (IOException e) {
+                                Main.log(Level.WARNING, String.format("Unable to show commit for %s. Check stack trace", repo.getName()));
+                                e.printStackTrace();
+                            }
+                        });
+                    }
+                } catch (GHException e) {
+                    Main.log(Level.WARNING, String.format("Unable to show commit for %s. Check stack trace", repo.getName()));
+                    e.printStackTrace();
                 }
             }
         }, 1200L, 600L);
