@@ -34,7 +34,8 @@ public class GithubModule extends Module {
             "skytopia/Casino",
             "skytopia/Chatterbot",
             "skytopia/Shoptopia",
-            "skytopia/Skyblock-Public"
+            "skytopia/Skyblock-Public",
+            "skytopia/Skytopia"
     };
 
     /* Keep the latest SHA */
